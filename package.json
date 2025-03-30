@@ -1,0 +1,32 @@
+{
+  "name": "ym-virtualized-table",
+  "version": "0.1.1",
+  "type": "module",
+  "files": [
+    "es"
+  ],
+  "module": "es/index.js",
+  "main": "es/index.js",
+  "types": "es/index.d.ts",
+  "scripts": {
+    "dts": "vue-tsc --declaration --emitDeclarationOnly",
+    "tsc": "vue-tsc",
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "release": "npm run build && npm publish"
+  },
+  "dependencies": {
+    "vue": "^3.4.21"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "sass": "^1.72.0",
+    "sass-loader": "^14.1.1",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vite-plugin-dts": "^3.8.1",
+    "vue-tsc": "^2.0.6"
+  }
+}
