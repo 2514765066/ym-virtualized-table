@@ -5,10 +5,10 @@
         <th style="z-index: 2"></th>
         <th
           v-for="(_, index) of renderData[0]?.length"
-          :key="colStartIndex + index"
+          :key="index"
           :class="{ active: position.col == index }"
         >
-          {{ numberToCol(colStartIndex + index + 1) }}
+          {{ numberToCol(index + 1) }}
         </th>
       </tr>
     </thead>
@@ -23,7 +23,8 @@
           v-for="(item, index1) of row"
           :key="colStartIndex + index1"
           :class="{ active: position.row == index && position.col == index1 }"
-          @mouseover="handleOver(index, index1)"
+          @click="handleClick(index, index1)"
+          :title="item"
         >
           {{ item }}
         </td>
@@ -38,6 +39,7 @@ import { rowStartIndex, colStartIndex } from "../hooks/useTable";
 import { numberToCol } from "../utils/col";
 import { configKey } from "../hooks/useInjectKey";
 import { createArray } from "../utils/array";
+import { containerWidth } from "../hooks/useTable";
 
 const props = defineProps<{
   data: any[][];
@@ -50,19 +52,12 @@ const config = inject(configKey)!;
 
 //鼠标悬浮的单元格坐标
 const position = ref({
-  row: 0,
-  col: 0,
+  row: -1,
+  col: -1,
 });
 
 //补全后的数据
 const renderData = computed(() => {
-  if (
-    props.rowMaxCount <= props.data.length &&
-    props.colMaxCount <= props.data[0]?.length
-  ) {
-    return props.data;
-  }
-
   const res = createArray(props.rowMaxCount, props.colMaxCount);
 
   for (let i = 0; i < props.data.length; i++) {
@@ -75,7 +70,7 @@ const renderData = computed(() => {
 });
 
 //处理鼠标悬浮
-const handleOver = (row: number, col: number) => {
+const handleClick = (row: number, col: number) => {
   position.value = {
     row,
     col,
@@ -88,19 +83,19 @@ const handleOver = (row: number, col: number) => {
   position: sticky;
   top: 0;
   left: 0;
-  border-spacing: 1.5px 1px;
-  color: v-bind("config.cellColor");
+  border-collapse: separate;
+  border-spacing: 1px;
   font-size: 14px;
+  color: v-bind("config.cellColor");
+  background-color: v-bind("config.borderColor");
 
   th,
   td {
     height: calc(v-bind("config.cellHeight") * 1px);
-    font-weight: initial;
+    font-weight: unset;
   }
 
   th {
-    min-width: calc(v-bind("config.cellWidth") * 1px);
-
     position: sticky;
     top: 0;
     left: 0;
@@ -114,8 +109,14 @@ const handleOver = (row: number, col: number) => {
   }
 
   td {
-    padding: 0 5px;
+    min-width: calc(v-bind("config.cellWidth") * 1px);
+    max-width: calc(v-bind("containerWidth / 3") * 1px);
+
     background-color: v-bind("config.cellBgColor");
+    padding: 0 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   > tbody {
@@ -125,7 +126,7 @@ const handleOver = (row: number, col: number) => {
   }
 
   .active {
-    background-color: v-bind("config.hoverBgColor");
+    background-color: v-bind("config.selectBgColor");
   }
 }
 </style>

@@ -9,7 +9,7 @@ export type Config = {
   borderColor: string;
   headerBgColor: string;
   headerColor: string;
-  hoverBgColor: string;
+  selectBgColor: string;
 };
 
 export const configKey = Symbol() as InjectionKey<Config>;

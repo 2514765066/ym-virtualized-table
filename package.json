@@ -1,6 +1,6 @@
 {
   "name": "ym-virtualized-table",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "type": "module",
   "files": [
     "es"
@@ -17,6 +17,7 @@
     "release": "npm run build && npm publish"
   },
   "dependencies": {
+    "element-plus": "^2.9.7",
     "vue": "^3.4.21"
   },
   "devDependencies": {
@@ -27,6 +28,10 @@
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
     "vite-plugin-dts": "^3.8.1",
-    "vue-tsc": "^2.0.6"
+    "vue-tsc": "^2.0.6",
+    "unplugin-element-plus": "^0.9.1"
+  },
+  "volta": {
+    "node": "20.11.1"
   }
 }

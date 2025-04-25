@@ -1,5 +1,9 @@
 <template>
-  <section class="ym-table" ref="containerRef" @scroll="handleScroll">
+  <ElScrollbar
+    ref="containerRef"
+    viewClass="ym-virtualized-table"
+    @scroll="handleScroll"
+  >
     <div>
       <Table
         :data="renderData"
@@ -7,12 +11,13 @@
         :colMaxCount="colMaxCount"
       />
     </div>
-  </section>
+  </ElScrollbar>
 </template>
 
 <script setup lang="ts">
+import { ElScrollbar } from "element-plus";
 import Table from "./components/Table.vue";
-import { computed, provide, ref } from "vue";
+import { computed, onMounted, provide, ref } from "vue";
 import { throttle } from "./utils/throttle";
 import { useEvent } from "./hooks/useEvent";
 import {
@@ -37,7 +42,7 @@ const props = withDefaults(
     borderColor?: string;
     headerBgColor?: string;
     headerColor?: string;
-    hoverBgColor?: string;
+    selectBgColor?: string;
   }>(),
   {
     data: () => [[]],
@@ -51,32 +56,20 @@ const props = withDefaults(
     borderColor: "#F0F0F0",
     headerBgColor: "#F6F7F9",
     headerColor: "#616161",
-    hoverBgColor: "#E9EFF9",
+    selectBgColor: "#E9EFF9",
   }
 );
 
-provide(configKey, {
-  cellWidth: props.cellWidth,
-  cellHeight: props.cellHeight,
-  serialWidth: props.serialWidth,
-  cellBgColor: props.cellBgColor,
-  cellColor: props.cellColor,
-  borderColor: props.borderColor,
-  headerBgColor: props.headerBgColor,
-  headerColor: props.headerColor,
-  hoverBgColor: props.hoverBgColor,
-});
-
 //容器
-const containerRef = ref<HTMLElement>();
-
-useEvent(containerRef);
+const containerRef = ref<InstanceType<typeof ElScrollbar>>();
 
 //计算渲染的最大行数
 const rowMaxCount = computed(() => {
-  return Math.ceil(
+  const count = Math.ceil(
     (containerHeight.value - props.cellHeight) / props.cellHeight
   );
+
+  return count > 0 ? count : 1;
 });
 
 //计算结尾索引
@@ -86,23 +79,27 @@ const rowEndIndex = computed(() => {
   return props.data[end] ? end : props.data.length;
 });
 
-//计算渲染的最大列数
+// //计算渲染的最大列数
 const colMaxCount = computed(() => {
-  return Math.ceil(
+  const count = Math.ceil(
     (containerWidth.value - props.serialWidth) / props.cellWidth
   );
+
+  return count > 0 ? count : 1;
 });
 
-//计算结尾索引
-const colEndIndex = computed(() => {
-  const end = colStartIndex.value + colMaxCount.value;
+// //计算结尾索引
+// const colEndIndex = computed(() => {
+//   const end = colStartIndex.value + colMaxCount.value;
 
-  return props.data[0][end] ? end : props.data[0].length;
-});
+//   return props.data[0][end] ? end : props.data[0].length;
+// });
 
 //实际宽度
 const width = computed(() => {
-  return props.data[0].length * props.cellWidth + props.serialWidth;
+  const length = props.data[0]?.length || 0;
+
+  return length * props.cellWidth + props.serialWidth;
 });
 
 //实际高度
@@ -112,12 +109,16 @@ const height = computed(() => {
 
 //计算渲染的数据
 const renderData = computed(() => {
+  if (props.data.length == 0) {
+    return [[]];
+  }
+
   const res = props.data.slice(rowStartIndex.value, rowEndIndex.value);
 
-  for (let i = 0; i < res.length; i++) {
-    const row = res[i];
-    res[i] = row.slice(colStartIndex.value, colEndIndex.value);
-  }
+  // for (let i = 0; i < res.length; i++) {
+  //   const row = res[i];
+  //   res[i] = row.slice(colStartIndex.value, colEndIndex.value);
+  // }
 
   return res;
 });
@@ -128,20 +129,38 @@ const handleScroll = throttle(() => {
     return;
   }
 
-  const { scrollTop, scrollLeft } = containerRef.value;
+  const { scrollTop, scrollLeft } = containerRef.value.wrapRef!;
 
   rowStartIndex.value = Math.floor(scrollTop / props.cellHeight);
   colStartIndex.value = Math.floor(scrollLeft / props.cellWidth);
 });
+
+provide(configKey, {
+  cellWidth: props.cellWidth,
+  cellHeight: props.cellHeight,
+  serialWidth: props.serialWidth,
+  cellBgColor: props.cellBgColor,
+  cellColor: props.cellColor,
+  borderColor: props.borderColor,
+  headerBgColor: props.headerBgColor,
+  headerColor: props.headerColor,
+  selectBgColor: props.selectBgColor,
+});
+
+onMounted(() => {
+  if (!containerRef.value) {
+    return;
+  }
+
+  useEvent(containerRef.value.wrapRef!);
+});
 </script>
 
-<style scoped lang="scss">
-.ym-table {
+<style lang="scss">
+.ym-virtualized-table {
   width: v-bind("formatUnit($props.width)");
   height: v-bind("formatUnit($props.height)");
   position: relative;
-  background-color: v-bind("borderColor");
-  overflow: auto;
 
   > div {
     width: calc(v-bind("width") * 1px);
